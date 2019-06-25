@@ -21,12 +21,12 @@ type EventServer struct {
 
 type EventReceiver interface {
 	// Handle this specific eventtype, eg github, gitlab, slack, w/e
-	HandleEvent(string, []string, *http.Request)
+	HandleEvent([]string, *http.Request)
 	// Each event types provides its own mechanism for determining if it is a valid event.
 	// - if the event received matches no known type, then we drop, log and continue
 	// - if the event matches a type, but not what wqe are configured for, log and continue
 	// - if we get the right type and it matches, process and send to Sink.
-	ValidateType(*http.Request) (string, bool)
+	ValidateType(*http.Request) bool
 	// Return an ID for this type of event
 	ID(r *http.Request) string
 	// The source of the event, eg, for github it is the owner repository "iancoffey/cloudevent-gateway"
@@ -36,8 +36,8 @@ type EventReceiver interface {
 func (e *EventServer) Run() error {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		for _, receiver := range e.Receivers {
-			if eventName, ok := receiver.ValidateType(r); ok {
-				receiver.HandleEvent(eventName, e.Events, r)
+			if ok := receiver.ValidateType(r); ok {
+				receiver.HandleEvent(e.Events, r)
 				return
 			}
 		}

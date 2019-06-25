@@ -24,7 +24,7 @@ type GithubReceiver struct {
 	source   string // use for ownerRepo
 }
 
-func New(sink, secret, source string, logger *log.Entry) (*GithubReceiver, error) {
+func New(sink, secret string, logger *log.Entry) (*GithubReceiver, error) {
 	ghClient, err := gh.New(gh.Options.Secret(secret))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create gh client: %q", err)
@@ -48,16 +48,29 @@ func New(sink, secret, source string, logger *log.Entry) (*GithubReceiver, error
 		logger:   logger,
 		ghClient: ghClient,
 		ceClient: ceClient,
-		source:   source,
 	}, nil
 }
 
-func (g *GithubReceiver) HandleEvent(eventName string, events []string, r *http.Request) {
+func (g *GithubReceiver) HandleEvent(events []string, r *http.Request) {
+
+	eventID := g.ID(r)
+	if eventID == "" {
+		g.logger.Info("EventID not found - X-GitHub-Delivery unset")
+		return
+	}
+	source := g.Source(r)
+	if source == "" {
+		g.logger.Info("Github Source not found - EVENT_SOURCE environment variable unset")
+		return
+	}
+	eventName := g.EventName(r)
+	if eventName == "" {
+		g.logger.Info("Event Name not found - X-GitHub-Event unset")
+	}
 	if !eventInEvents(eventName, events) {
 		g.logger.Fatalf("at=skipping-event event=%s", eventName)
 		return
 	}
-
 	ghEvent, err := g.ghClient.Parse(r, stringsToEvents(events)...)
 	if err != nil {
 		if err == gh.ErrEventNotFound {
@@ -65,7 +78,7 @@ func (g *GithubReceiver) HandleEvent(eventName string, events []string, r *http.
 			return
 		}
 	}
-	eventID := g.ID(r)
+
 	event := cloudevents.NewEvent(cloudevents.VersionV02)
 	event.SetID(eventID)
 	event.SetType(eventName)
@@ -81,12 +94,16 @@ func (g *GithubReceiver) HandleEvent(eventName string, events []string, r *http.
 	}
 }
 
-func (g *GithubReceiver) ValidateType(r *http.Request) (string, bool) {
-	event := r.Header.Get(eventHeader)
+func (g *GithubReceiver) ValidateType(r *http.Request) bool {
+	event := g.EventName(r)
 	if event == "" {
-		return "", false
+		return false
 	}
-	return event, true
+	return true
+}
+
+func (g *GithubReceiver) EventName(r *http.Request) string {
+	return r.Header.Get(eventHeader)
 }
 
 func (g *GithubReceiver) ID(r *http.Request) string {

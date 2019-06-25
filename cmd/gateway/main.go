@@ -45,7 +45,7 @@ func main() {
 
 	switch cfg.EventType {
 	case githubEventType:
-		ghWebhook, err := github.New(cfg.Sink, cfg.Secret, cfg.Source, logger)
+		ghWebhook, err := github.New(cfg.Sink, cfg.Secret, logger)
 		if err != nil {
 			logger.Fatalf("Failed to create github client error=%q", err)
 		}
