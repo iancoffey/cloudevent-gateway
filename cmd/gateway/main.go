@@ -10,7 +10,6 @@ import (
 )
 
 const (
-	envSecret       = "GITHUB_SECRET"
 	githubEventType = "github"
 )
 
@@ -24,7 +23,6 @@ const (
 type Config struct {
 	EventType string   `env:"EVENTTYPE,default=github"`
 	Events    []string `env:"EVENTNAME,default=push"`
-	Secret    string   `env:"GITHUB_SECRET"`
 	Sink      string   `env:"EVENT_SINK"`
 	Source    string   `env:"EVENT_SOURCE"`
 }
@@ -45,7 +43,7 @@ func main() {
 
 	switch cfg.EventType {
 	case githubEventType:
-		ghWebhook, err := github.New(cfg.Sink, cfg.Secret, logger)
+		ghWebhook, err := github.New(cfg.Sink, logger)
 		if err != nil {
 			logger.Fatalf("Failed to create github client error=%q", err)
 		}

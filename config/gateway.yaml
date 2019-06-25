@@ -1,0 +1,25 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: cloudevent-gateway
+spec:
+  selector:
+    matchLabels:
+      app: gateway
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: gateway
+    spec:
+      containers:
+      - name: gateway-server
+        # This is the import path for the Go binary to build and run.
+        image: github.com/iancoffey/cloudevent-gateway/cmd/gateway
+        ports:
+        - containerPort: 8089
+        env:
+        - name: EVENT_SINK
+          value: "https://test.x.pipedream.net/"
+        - name: EVENT_SOURCE
+          value: "thisgithub/repo"

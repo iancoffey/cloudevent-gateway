@@ -1,0 +1,41 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: cloudevent-gateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gateway
+  template:
+    metadata:
+      labels:
+        app: gateway
+    spec:
+      containers:
+      - env:
+        - name: EVENT_SINK
+          value: https://test.x.pipedream.net/
+        - name: EVENT_SOURCE
+          value: thisgithub/repo
+        image: index.docker.io/iancoffey/gateway-0ff5cc7683397869eb157e054201775b@sha256:2190a4cc51f66f2b490afe4ccad95116fabba1e530325edc85388ad164e8e295
+        name: gateway-server
+        ports:
+        - containerPort: 8089
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: gateway
+  name: cloudevent-gateway-service
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 8089
+  selector:
+    app: gateway
+
+---

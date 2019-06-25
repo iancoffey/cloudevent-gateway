@@ -17,15 +17,14 @@ const (
 
 type GithubReceiver struct {
 	sink     string
-	secret   string
 	logger   *log.Entry
 	ghClient *gh.Webhook
 	ceClient cloudevents.Client
 	source   string // use for ownerRepo
 }
 
-func New(sink, secret string, logger *log.Entry) (*GithubReceiver, error) {
-	ghClient, err := gh.New(gh.Options.Secret(secret))
+func New(sink string, logger *log.Entry) (*GithubReceiver, error) {
+	ghClient, err := gh.New()
 	if err != nil {
 		return nil, fmt.Errorf("failed to create gh client: %q", err)
 	}
@@ -44,7 +43,6 @@ func New(sink, secret string, logger *log.Entry) (*GithubReceiver, error) {
 
 	return &GithubReceiver{
 		sink:     sink,
-		secret:   secret,
 		logger:   logger,
 		ghClient: ghClient,
 		ceClient: ceClient,
