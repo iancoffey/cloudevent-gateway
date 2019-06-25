@@ -2,7 +2,10 @@ package main
 
 import (
 	"github.com/iancoffey/cloudevent-gateway/pkg/sources"
-	"github.com/pkg/errors"
+	"github.com/iancoffey/cloudevent-gateway/pkg/sources/github"
+	"github.com/iancoffey/cloudevent-gateway/pkg/types"
+
+	"github.com/joeshaw/envdecode"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -19,9 +22,11 @@ const (
 // once we understand the structure this will be in
 // - we will need to accept an array of eventtypes probably
 type Config struct {
-	EventType string          `env:"EVENTTYPE,default=github"`
-	Events    []sources.Event `env:"EVENTNAME,default=push"`
-	Secret    string          `env:"GITHUB_SECRET"`
+	EventType string   `env:"EVENTTYPE,default=github"`
+	Events    []string `env:"EVENTNAME,default=push"`
+	Secret    string   `env:"GITHUB_SECRET"`
+	Sink      string   `env:"EVENT_SINK"`
+	Source    string   `env:"EVENT_SOURCE"`
 }
 
 // we can process events like event.Process()
@@ -33,20 +38,28 @@ func main() {
 	logger.Info("Booting gateway!")
 
 	var cfg Config
-	err := envdecode.Decode(&cfg)
+	if err := envdecode.Decode(&cfg); err != nil {
+		logger.Fatal("Failed to decode env error=%q")
+	}
+	receivers := []types.EventReceiver{}
 
-	switch EventType {
+	switch cfg.EventType {
 	case githubEventType:
-		webhook, err := gh.New(gh.Options.Secret(cfg.Secret))
+		ghWebhook, err := github.New(cfg.Sink, cfg.Secret, cfg.Source, logger)
 		if err != nil {
-			logger.Fatalf("at=github-new", err)
+			logger.Fatalf("Failed to create github client error=%q", err)
 		}
+		receivers = append(receivers, ghWebhook)
 	default:
-		logger.Fatal("at=unrecognized-eventtype")
+		logger.Fatal("Unrecognized Eventtype")
 	}
 
-	server := sources.NewServer(cfg.EventType, cfg.EventName, webhook)
+	if len(receivers) == 0 {
+		logger.Fatal("at=no-receivers-defined")
+	}
+
+	server := sources.NewServer(cfg.Events, receivers, logger)
 	if err := server.Run(); err != nil {
-		logger.Fatalf("at=server-failed", err)
+		logger.Fatalf("Server Failed error=%q", err)
 	}
 }
