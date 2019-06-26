@@ -20,6 +20,6 @@ spec:
         - containerPort: 8089
         env:
         - name: EVENT_SINK
-          value: "https://test.x.pipedream.net/"
+          value: "https://something.x.pipedream.net"
         - name: EVENT_SOURCE
           value: "thisgithub/repo"

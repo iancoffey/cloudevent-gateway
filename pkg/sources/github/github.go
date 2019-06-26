@@ -93,6 +93,7 @@ func (g *GithubReceiver) HandleEvent(events []string, r *http.Request) {
 }
 
 func (g *GithubReceiver) ValidateType(r *http.Request) bool {
+	g.logger.Infof("eventName %s", g.EventName(r))
 	event := g.EventName(r)
 	if event == "" {
 		return false

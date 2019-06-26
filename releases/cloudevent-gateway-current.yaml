@@ -18,7 +18,7 @@ spec:
           value: https://test.x.pipedream.net/
         - name: EVENT_SOURCE
           value: thisgithub/repo
-        image: index.docker.io/iancoffey/gateway-0ff5cc7683397869eb157e054201775b@sha256:2190a4cc51f66f2b490afe4ccad95116fabba1e530325edc85388ad164e8e295
+        image: index.docker.io/iancoffey/gateway-0ff5cc7683397869eb157e054201775b@sha256:c1bf46115f3691907b2b3f31457523aa20d0c1d4cf5d718ee1c6797aadb52c42
         name: gateway-server
         ports:
         - containerPort: 8089
@@ -37,6 +37,6 @@ spec:
     targetPort: 8089
   selector:
     app: gateway
-  type: NodePort
+  type: Loadbalancer
 
 ---

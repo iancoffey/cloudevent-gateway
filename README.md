@@ -1,6 +1,6 @@
 # cloudevent-gateway
 
-A small service that ingests various `Event` sources, processes the Event based on the type, creates `CloudEvents` and sends the CloudEvents to a specified `Sink`. It is designed to be small and self-contained and depends on only corev1 `Kubernetes` resources to run.
+A small service that ingests various `Event` sources, processes the Event based on the type, creates `CloudEvents` and sends the CloudEvents to a specified `Sink`. It is designed to be small and self-contained and depends only on core  `Kubernetes` resources to run.
 
 The provided example manifests allow it to be started as a Deployment.
 
@@ -18,3 +18,11 @@ The following ENV variables exist to configure the gateway:
 You can apply the current latest example with `ko`.
 
 `ko apply -f releases/`
+
+Note: This will create a Service of type `Loadbalancer` by default - this must be changed to whatever fits your deployment best (ClusterIP, NodePort, etc).
+
+### Releasing
+
+The release is generated from the contents of config/.
+
+`ko resolve -f config/ > releases/cloudevent-gateway-current.yaml`

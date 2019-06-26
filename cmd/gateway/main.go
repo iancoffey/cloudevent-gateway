@@ -22,7 +22,7 @@ const (
 // - we will need to accept an array of eventtypes probably
 type Config struct {
 	EventType string   `env:"EVENTTYPE,default=github"`
-	Events    []string `env:"EVENTNAME,default=push"`
+	Events    []string `env:"EVENTNAMES,default=push"`
 	Sink      string   `env:"EVENT_SINK"`
 	Source    string   `env:"EVENT_SOURCE"`
 }
