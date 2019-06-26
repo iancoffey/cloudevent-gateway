@@ -8,14 +8,10 @@ The provided example manifests allow it to be started as a Deployment.
 
 The following ENV variables exist to configure the gateway:
 
-EVENTNAME
-EVENTTYPE
-	EventType string   `env:"EVENTTYPE,default=github"`
-	Events    []string `env:"EVENTNAME,default=push"`
-	Secret    string   `env:"GITHUB_SECRET"`
-	Sink      string   `env:"EVENT_SINK"`
-	Source    string   `env:"EVENT_SOURCE"`
-
+- EVENTNAMES - List of event names to be interested in, ";" delimited.
+- EVENTTYPE - The type of source events the gateway should expect, defaults to `github`.
+- EVENT_SINK - The http endpoint to send CloudEvents to.
+- EVENT_SOURCE - The origin of the events. For github eventtype, this should be repo name in `iancoffey/cloudevent-gateway` format.
 
 ### Installation
 
